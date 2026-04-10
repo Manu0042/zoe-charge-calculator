@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080a10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zoé Charge">
+  <meta name="description" content="Calculateur de recharge Renault Zoé 52 kWh">
+  <title>Zoé Charge</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #3fffb0;
+      --green-dim: #1a8c5a;
+      --green-dark: #0d1f18;
+      --bg: #080a10;
+      --bg1: #0f1219;
+      --bg2: #141820;
+      --bg3: #0c0e15;
+      --border: #1e2535;
+      --border2: #1a2030;
+      --text: #e8eaf0;
+      --text2: #c0c8e0;
+      --muted: #3a4560;
+      --muted2: #2a3348;
+      --warn: #ffce4a;
+      --warn-bg: #160f04;
+      --warn-border: #6e5010;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Grid texture */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(62,255,176,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62,255,176,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .app {
+      position: relative; z-index: 1;
+      max-width: 480px; margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+
+    /* Status bar spacer */
+    .statusbar-spacer {
+      height: calc(env(safe-area-inset-top, 0px) + 16px);
+    }
+
+    /* Header */
+    .header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 8px 0 24px;
+      animation: fadeUp .4s ease both;
+    }
+    .logo-ring {
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 1.5px solid var(--green);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 22px #3fffb044, inset 0 0 10px #3fffb011;
+      flex-shrink: 0;
+    }
+    .logo-ring svg { display: block; }
+    .header-text h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.3px;
+    }
+    .header-text p { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-top: 3px; }
+
+    /* Cards */
+    .card {
+      background: linear-gradient(160deg, var(--bg2) 0%, var(--bg1) 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 0 #ffffff08 inset, 0 20px 44px #00000077, 0 4px 10px #00000044;
+      animation: fadeUp .4s ease both;
+    }
+    .card-label {
+      font-size: 10px; color: var(--muted2);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* SOC */
+    .soc-hero { display: flex; align-items: baseline; gap: 5px; line-height: 1; }
+    .soc-num {
+      font-family: 'Syne', sans-serif; font-size: 76px; font-weight: 800;
+      letter-spacing: -5px; color: #fff;
+      text-shadow: 0 0 50px #3fffb022;
+      transition: color .2s;
+    }
+    .soc-pct { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 700; color: var(--green); }
+    .soc-sub { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-top: 6px; }
+
+    input[type=range] {
+      width: 100%; margin: 14px 0 6px;
+      -webkit-appearance: none; appearance: none;
+      background: transparent; cursor: pointer;
+      touch-action: pan-y;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 3px; background: var(--border); border-radius: 99px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 26px; height: 26px; border-radius: 50%; margin-top: -11.5px;
+      background: var(--green);
+      box-shadow: 0 0 16px #3fffb088, 0 0 0 4px #3fffb022;
+      transition: box-shadow .2s;
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      box-shadow: 0 0 24px #3fffb0bb, 0 0 0 8px #3fffb033;
+    }
+
+    .bar-wrap { position: relative; height: 4px; background: var(--border); border-radius: 99px; margin: 4px 0; }
+    .bar-fill {
+      height: 4px; border-radius: 99px;
+      background: linear-gradient(90deg, #0d7a4e, var(--green));
+      transition: width .3s ease; position: relative;
+    }
+    .bar-fill::after {
+      content: ''; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+      width: 10px; height: 10px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 10px #3fffb0cc;
+    }
+    .bar-tick { position: absolute; right: 0; top: -7px; bottom: -7px; width: 2px; background: #252e45; border-radius: 1px; }
+    .bar-tick::after {
+      content: '80 %'; position: absolute; right: 5px; top: -14px;
+      font-size: 9px; color: var(--muted2); white-space: nowrap;
+    }
+    .track-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted2); margin-top: 6px; }
+
+    /* Metrics */
+    .metrics {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin-bottom: 12px;
+      animation: fadeUp .4s .06s ease both;
+    }
+    .metric-card {
+      background: linear-gradient(150deg, var(--bg2), var(--bg1));
+      border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px;
+      box-shadow: 0 1px 0 #ffffff07 inset, 0 12px 28px #00000055;
+    }
+    .m-val {
+      font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+      color: #fff; line-height: 1;
+    }
+    .m-unit { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .m-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 7px; }
+
+    /* Mode tiles */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-tile {
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 12px; padding: 12px 14px; cursor: pointer;
+      box-shadow: 0 1px 0 #ffffff05 inset, 0 6px 16px #00000044;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .mode-tile:active { transform: scale(.97); }
+    .mode-tile.active {
+      border-color: var(--green); background: var(--green-dark);
+      box-shadow: 0 0 0 1px #3fffb022, 0 0 28px #3fffb011, 0 1px 0 #3fffb022 inset, 0 8px 24px #00000066;
+    }
+    .tile-pw { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--text2); }
+    .mode-tile.active .tile-pw { color: var(--green); }
+    .tile-nm { font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .tile-eff { font-size: 9px; color: var(--muted2); margin-top: 6px; }
+    .mode-tile.active .tile-eff { color: var(--green-dim); }
+
+    /* Calc toggle */
+    .calc-toggle {
+      display: flex; background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+      box-shadow: 0 4px 10px #00000044;
+    }
+    .calc-btn {
+      flex: 1; border: none; background: transparent; padding: 11px 8px;
+      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+      cursor: pointer; transition: background .15s, color .15s;
+      border-right: 1px solid var(--border2);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .calc-btn:last-child { border-right: none; }
+    .calc-btn.active { background: #111520; color: var(--green); box-shadow: inset 0 1px 0 #3fffb022; }
+
+    /* Time input */
+    .time-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+    input[type=time] {
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 16px;
+      font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500;
+      color: #fff; width: 100%;
+      box-shadow: 0 4px 12px #00000055, inset 0 1px 0 #ffffff05;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+    input[type=time]:focus {
+      outline: none; border-color: #3fffb066;
+      box-shadow: 0 0 0 3px #3fffb011, 0 4px 12px #00000055;
+    }
+
+    /* Result */
+    .result-card {
+      border-radius: 18px; padding: 20px;
+      margin-bottom: 12px;
+      animation: fadeUp .4s .12s ease both;
+      transition: background .35s, border-color .35s, box-shadow .35s;
+    }
+    .result-card.state-info { background: var(--bg1); border: 1px solid var(--border); box-shadow: 0 16px 40px #00000055; }
+    .result-card.state-ok   { background: var(--green-dark); border: 1px solid #1a6645; box-shadow: 0 0 50px #3fffb00d, 0 16px 40px #00000066; }
+    .result-card.state-warn { background: var(--warn-bg); border: 1px solid var(--warn-border); box-shadow: 0 0 50px #ffce4a08, 0 16px 40px #00000066; }
+
+    .res-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+    .state-info .res-eyebrow { color: var(--muted); }
+    .state-ok   .res-eyebrow { color: var(--green-dim); }
+    .state-warn .res-eyebrow { color: #8c6a0a; }
+
+    .res-time {
+      font-family: 'Syne', sans-serif; font-size: 62px; font-weight: 800;
+      letter-spacing: -3px; line-height: 1;
+      transition: color .3s, text-shadow .3s;
+    }
+    .state-info .res-time { color: var(--muted2); }
+    .state-ok   .res-time { color: var(--green); text-shadow: 0 0 50px #3fffb055; }
+    .state-warn .res-time { color: var(--warn); text-shadow: 0 0 50px #ffce4a33; }
+
+    .res-sub { font-size: 11px; margin-top: 10px; transition: color .3s; }
+    .state-info .res-sub { color: var(--muted); }
+    .state-ok   .res-sub { color: #1a5c3a; }
+    .state-warn .res-sub { color: #6e5010; }
+
+    /* Detail table */
+    .detail-table { width: 100%; border-collapse: collapse; }
+    .detail-table td { padding: 8px 0; font-size: 12px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+    .detail-table tr:last-child td { border-bottom: none; }
+    .detail-table td:first-child { color: var(--muted); }
+    .detail-table td:last-child { text-align: right; color: var(--text2); font-weight: 500; }
+
+    /* Install banner */
+    #install-banner {
+      display: none; align-items: center; gap: 12px;
+      background: var(--green-dark); border: 1px solid var(--green-dim);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+      box-shadow: 0 0 30px #3fffb011;
+      animation: fadeUp .4s ease both;
+    }
+    #install-banner p { font-size: 12px; color: var(--text2); flex: 1; line-height: 1.5; }
+    #install-banner strong { color: var(--green); display: block; font-family: 'Syne', sans-serif; font-size: 13px; margin-bottom: 2px; }
+    .install-btn {
+      background: var(--green); color: #080a10; border: none;
+      border-radius: 8px; padding: 8px 14px; font-family: 'DM Mono', monospace;
+      font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="statusbar-spacer"></div>
+
+<div class="app">
+
+  <!-- Install banner -->
+  <div id="install-banner">
+    <div style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3fffb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <p><strong>Installer l'application</strong>Ajouter à l'écran d'accueil pour un accès rapide</p>
+    <button class="install-btn" id="install-btn">Installer</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-ring">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3fffb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>Renault Zoé</h1>
+      <p>Calculateur de recharge · 52 kWh</p>
+    </div>
+  </div>
+
+  <!-- SOC -->
+  <div class="card" style="animation-delay:0s">
+    <div class="card-label">État de charge actuel</div>
+    <div class="soc-hero">
+      <div class="soc-num" id="soc-big">20</div>
+      <div class="soc-pct">%</div>
+    </div>
+    <div class="soc-sub">Glisser pour ajuster</div>
+    <input type="range" id="soc" min="0" max="79" value="20" step="1" oninput="update()">
+    <div class="bar-wrap">
+      <div class="bar-fill" id="soc-bar" style="width:25%"></div>
+      <div class="bar-tick"></div>
+    </div>
+    <div class="track-labels"><span>0 %</span><span></span></div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="m-val" id="m-kwh">31,2 <span class="m-unit">kWh</span></div>
+      <div class="m-lbl">À recharger</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val" id="m-dur">4h13</div>
+      <div class="m-lbl">Durée estimée</div>
+    </div>
+  </div>
+
+  <!-- Mode -->
+  <div class="card" style="animation-delay:.08s">
+    <div class="card-label">Mode de recharge</div>
+    <div class="mode-grid">
+      <div class="mode-tile active" onclick="setMode(this,0)">
+        <div class="tile-pw">7,4 kW</div>
+        <div class="tile-nm">Wallbox</div>
+        <div class="tile-eff">Rendement 90 %</div>
+      </div>
+      <div class="mode-tile" onclick="setMode(this,1)">
+        <div class="tile-pw">22 kW</div>
+        <div class="tile-nm">Borne publique</div>
+        <div class="tile-eff">Rendement 90 %</div>
+      </div>
+      <div class="mode-tile" onclick="setMode(this,2)">
+        <div class="tile-pw">3,7 kW</div>
+        <div class="tile-nm">Prise renforcée</div>
+        <div class="tile-eff">Rendement 90 %</div>
+      </div>
+      <div class="mode-tile" onclick="setMode(this,3)">
+        <div class="tile-pw">2,3 kW</div>
+        <div class="tile-nm">Prise domestique</div>
+        <div class="tile-eff">Rendement 82,6 %</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calc mode + time -->
+  <div class="card" style="animation-delay:.12s">
+    <div class="card-label">Mode de calcul</div>
+    <div class="calc-toggle">
+      <button class="calc-btn active" id="btn-start" onclick="setCalcMode('start')">Heure de branchement →</button>
+      <button class="calc-btn" id="btn-end" onclick="setCalcMode('end')">← Heure de fin</button>
+    </div>
+    <div id="panel-start">
+      <div class="time-lbl">Je branche à</div>
+      <input type="time" id="start-time" oninput="update()">
+    </div>
+    <div id="panel-end" style="display:none">
+      <div class="time-lbl">Je veux finir à</div>
+      <input type="time" id="end-time" oninput="update()">
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card state-info" id="result-card">
+    <div class="res-eyebrow" id="res-eyebrow">En attente</div>
+    <div class="res-time" id="res-time">--:--</div>
+    <div class="res-sub" id="res-sub">Entrez une heure pour lancer le calcul</div>
+  </div>
+
+  <!-- Detail -->
+  <div class="card" style="animation-delay:.16s">
+    <div class="card-label">Détail du calcul</div>
+    <table class="detail-table">
+      <tr><td>Batterie</td><td>52 kWh</td></tr>
+      <tr><td>SoC départ</td><td id="d-soc">20 %</td></tr>
+      <tr><td>SoC cible</td><td>80 %</td></tr>
+      <tr><td>Puissance</td><td id="d-power">7,4 kW</td></tr>
+      <tr><td>Rendement</td><td id="d-eff">90,0 %</td></tr>
+      <tr><td>Énergie réseau</td><td id="d-kwh">34,7 kWh</td></tr>
+      <tr><td id="d-label">Fin de charge</td><td id="d-result">--:--</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  // ---- Logic ----
+  const MODES = [
+    { power: 7.4,  eff: 0.90  },
+    { power: 22,   eff: 0.90  },
+    { power: 3.7,  eff: 0.90  },
+    { power: 2.3,  eff: 0.826 },
+  ];
+  let modeIdx = 0, calcMode = 'start';
+  const BATTERY = 52, TARGET = 80;
+
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function fmtH(h) {
+    const hh = Math.floor(h), mm = Math.round((h-hh)*60);
+    if (hh === 0) return mm + 'min';
+    if (mm === 0) return hh + 'h00';
+    return hh + 'h' + pad(mm);
+  }
+
+  function setMode(el, idx) {
+    document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    modeIdx = idx; update();
+  }
+
+  function setCalcMode(m) {
+    calcMode = m;
+    document.getElementById('btn-start').className = 'calc-btn' + (m==='start' ? ' active' : '');
+    document.getElementById('btn-end').className   = 'calc-btn' + (m==='end'   ? ' active' : '');
+    document.getElementById('panel-start').style.display = m==='start' ? '' : 'none';
+    document.getElementById('panel-end').style.display   = m==='end'   ? '' : 'none';
+    document.getElementById('d-label').textContent = m==='start' ? 'Fin de charge' : 'Brancher à';
+    update();
+  }
+
+  function update() {
+    const M = MODES[modeIdx];
+    const soc = parseInt(document.getElementById('soc').value);
+    const missing = Math.max(0, TARGET - soc);
+    const kwhNet  = BATTERY * missing / 100;
+    const kwhGrid = kwhNet / M.eff;
+    const hours   = kwhGrid / M.power;
+    const totalMins = Math.round(hours * 60);
+
+    document.getElementById('soc-big').textContent = soc;
+    document.getElementById('soc-bar').style.width = ((soc/80)*100) + '%';
+    document.getElementById('m-kwh').innerHTML = kwhNet.toFixed(1).replace('.',',') + ' <span class="m-unit">kWh</span>';
+    document.getElementById('m-dur').textContent = missing===0 ? '0h00' : fmtH(hours);
+    document.getElementById('d-soc').textContent   = soc + ' %';
+    document.getElementById('d-power').textContent = M.power.toFixed(1).replace('.',',') + ' kW';
+    document.getElementById('d-eff').textContent   = (M.eff*100).toFixed(1).replace('.',',') + ' %';
+    document.getElementById('d-kwh').textContent   = kwhGrid.toFixed(1).replace('.',',') + ' kWh';
+
+    const card    = document.getElementById('result-card');
+    const eyebrow = document.getElementById('res-eyebrow');
+    const timeEl  = document.getElementById('res-time');
+    const sub     = document.getElementById('res-sub');
+    const dRes    = document.getElementById('d-result');
+
+    if (missing === 0) {
+      card.className = 'result-card state-ok';
+      eyebrow.textContent = 'Batterie suffisante';
+      timeEl.textContent  = '≥ 80 %';
+      sub.textContent     = 'Aucune recharge nécessaire';
+      dRes.textContent    = '—'; return;
+    }
+
+    if (calcMode === 'start') {
+      const val = document.getElementById('start-time').value;
+      if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de branchement"; dRes.textContent='--:--'; return; }
+      const [h,mn] = val.split(':').map(Number);
+      const sm = h*60+mn;
+      const em = (sm+totalMins) % (24*60);
+      const endStr = pad(Math.floor(em/60)) + ':' + pad(em%60);
+      const next = (sm+totalMins) >= 24*60;
+      card.className = 'result-card ' + (next ? 'state-warn' : 'state-ok');
+      eyebrow.textContent = 'Fin de charge estimée';
+      timeEl.textContent  = endStr;
+      sub.textContent     = next ? 'Le lendemain · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
+      dRes.textContent    = endStr + (next ? ' +1j' : '');
+    } else {
+      const val = document.getElementById('end-time').value;
+      if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de fin souhaitée"; dRes.textContent='--:--'; return; }
+      const [h,mn] = val.split(':').map(Number);
+      const em = h*60+mn;
+      let sm = em - totalMins;
+      const prev = sm < 0;
+      sm = ((sm % (24*60)) + (24*60)) % (24*60);
+      const startStr = pad(Math.floor(sm/60)) + ':' + pad(sm%60);
+      card.className = 'result-card ' + (prev ? 'state-warn' : 'state-ok');
+      eyebrow.textContent = 'Branchez la voiture à';
+      timeEl.textContent  = startStr;
+      sub.textContent     = prev ? 'La veille · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
+      dRes.textContent    = startStr + (prev ? ' -1j' : '');
+    }
+  }
+
+  // Init time inputs
+  const now = new Date();
+  const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  document.getElementById('start-time').value = t;
+  document.getElementById('end-time').value   = t;
+  update();
+
+  // ---- PWA Install prompt ----
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'flex';
+  });
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+  });
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('install-banner').style.display = 'none';
+  });
+
+  // ---- Service Worker ----
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
