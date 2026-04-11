@@ -328,21 +328,22 @@
     </div>
   </div>
 
-  <!-- SOC + métriques inline avec jauge circulaire -->
+  <!-- SOC + métriques inline avec stepper -->
   <div class="card" style="animation-delay:0s">
     <div class="card-label">État de charge actuel</div>
     <div style="display:flex; align-items:center; gap:16px;">
-      <div style="flex-shrink:0;">
-        <svg id="gauge-svg" width="160" height="100" viewBox="0 0 200 120" style="touch-action:none; cursor:pointer; display:block;">
-          <path id="gauge-bg"   fill="none" stroke="#e0e4ec" stroke-width="18" stroke-linecap="round"/>
-          <path id="gauge-fill" fill="none" stroke="#00b67a" stroke-width="18" stroke-linecap="round"/>
-          <circle id="gauge-thumb" r="14" fill="#00b67a" stroke="#fff" stroke-width="4"/>
-          <text x="100" y="96" text-anchor="middle" font-family="'Syne',sans-serif" font-size="38" font-weight="800" fill="#0d1117" id="gauge-label">20</text>
-          <text x="100" y="116" text-anchor="middle" font-family="'Syne',sans-serif" font-size="14" font-weight="700" fill="#00b67a">%</text>
-        </svg>
-        <div style="text-align:center;font-size:9px;color:#a0aabb;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;">Glisser sur l'arc</div>
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; align-items:baseline; gap:5px; line-height:1; margin-bottom:14px;">
+          <div style="font-family:'Syne',sans-serif; font-size:72px; font-weight:800; letter-spacing:-4px; color:#0d1117; line-height:1;" id="soc-big">20</div>
+          <div style="font-family:'Syne',sans-serif; font-size:32px; font-weight:700; color:#00b67a;">%</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button id="soc-minus" style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#f0f2f5; color:#0d1117; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">−</button>
+          <button id="soc-plus"  style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#0d1117; color:#00b67a; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">+</button>
+        </div>
+        <div style="font-size:10px; color:#a0aabb; text-align:center; margin-top:8px; letter-spacing:.04em;">Appui court ±1 % · Appui long ±10 %</div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-width:0;">
+      <div style="display:flex; flex-direction:column; gap:12px; min-width:90px;">
         <div>
           <div class="m-val-sm" id="m-kwh">14,8 <span class="m-unit-sm">kWh</span></div>
           <div class="m-lbl-sm">À recharger</div>
@@ -448,59 +449,36 @@
     label.textContent = open ? 'Masquer le détail' : 'Voir le détail du calcul';
   }
 
-  // ---- Jauge circulaire ----
-  const GCX=100, GCY=108, GR=82;
-  const G_START = Math.PI, G_END = 2*Math.PI;
-  let gaugeVal = 20;
+  // ---- Stepper +/- ----
+  let socVal = 20;
 
-  function gPolar(a){ return { x: GCX+GR*Math.cos(a), y: GCY+GR*Math.sin(a) }; }
-  function gArc(a1,a2){
-    const s=gPolar(a1), e=gPolar(a2), lg=(a2-a1)>Math.PI?1:0;
-    return `M${s.x} ${s.y} A${GR} ${GR} 0 ${lg} 1 ${e.x} ${e.y}`;
-  }
-  function valToAngle(v){ return G_START+(v/79)*(G_END-G_START); }
-
-  function renderGauge(){
-    document.getElementById('gauge-bg').setAttribute('d', gArc(G_START, G_END));
-    const a = valToAngle(gaugeVal);
-    document.getElementById('gauge-fill').setAttribute('d', gArc(G_START, a));
-    const p = gPolar(a);
-    const th = document.getElementById('gauge-thumb');
-    th.setAttribute('cx', p.x); th.setAttribute('cy', p.y);
-    document.getElementById('gauge-label').textContent = gaugeVal;
-    document.getElementById('soc-big') && (document.getElementById('soc-big').textContent = gaugeVal);
+  function socSet(v) {
+    socVal = Math.max(0, Math.min(79, v));
+    document.getElementById('soc-big').textContent = socVal;
     update();
   }
 
-  function angleFromEvent(e){
-    const svg = document.getElementById('gauge-svg');
-    const rect = svg.getBoundingClientRect();
-    const sx=200/rect.width, sy=120/rect.height;
-    const src = e.touches ? e.touches[0] : e;
-    const dx=(src.clientX-rect.left)*sx-GCX, dy=(src.clientY-rect.top)*sy-GCY;
-    return Math.atan2(dy,dx);
+  function makeHold(btnId, dir) {
+    const btn = document.getElementById(btnId);
+    let timer = null, interval = null;
+    const start = () => {
+      socSet(socVal + dir);
+      timer = setTimeout(() => {
+        interval = setInterval(() => socSet(socVal + dir * 10), 150);
+      }, 500);
+    };
+    const stop = () => { clearTimeout(timer); clearInterval(interval); };
+    btn.addEventListener('mousedown',   start);
+    btn.addEventListener('touchstart',  e => { e.preventDefault(); start(); }, { passive: false });
+    btn.addEventListener('mouseup',     stop);
+    btn.addEventListener('mouseleave',  stop);
+    btn.addEventListener('touchend',    stop);
+    btn.addEventListener('touchcancel', stop);
   }
+  makeHold('soc-minus', -1);
+  makeHold('soc-plus',  +1);
 
-  function applyAngle(raw){
-    let a = raw;
-    if(a>=0 && a<G_START) a=G_END;
-    if(a<G_START) a=G_START;
-    if(a>G_END) a=G_END;
-    gaugeVal = Math.round(((a-G_START)/(G_END-G_START))*79);
-    gaugeVal = Math.max(0,Math.min(79,gaugeVal));
-    renderGauge();
-  }
-
-  let gDrag=false;
-  const gSvg=document.getElementById('gauge-svg');
-  gSvg.addEventListener('mousedown',  e=>{gDrag=true; applyAngle(angleFromEvent(e));});
-  gSvg.addEventListener('touchstart', e=>{e.preventDefault(); gDrag=true; applyAngle(angleFromEvent(e));},{passive:false});
-  window.addEventListener('mousemove',  e=>{if(gDrag) applyAngle(angleFromEvent(e));});
-  window.addEventListener('touchmove',  e=>{if(gDrag){e.preventDefault(); applyAngle(angleFromEvent(e));}},{passive:false});
-  window.addEventListener('mouseup',  ()=>gDrag=false);
-  window.addEventListener('touchend', ()=>gDrag=false);
-
-  function getSoc(){ return gaugeVal; }
+  function getSoc() { return socVal; }
 
   function setMode(el, idx) {
     document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('active'));
@@ -557,7 +535,7 @@
   const now = new Date();
   const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
   document.getElementById('end-time').value = t;
-  renderGauge();
+  update();
 
   // ---- PWA Install prompt ----
   let deferredPrompt = null;
