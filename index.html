@@ -328,15 +328,21 @@
     </div>
   </div>
 
-  <!-- SOC + métriques inline -->
+  <!-- SOC + métriques inline avec jauge circulaire -->
   <div class="card" style="animation-delay:0s">
     <div class="card-label">État de charge actuel</div>
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
-      <div class="soc-hero">
-        <div class="soc-num" id="soc-big">20</div>
-        <div class="soc-pct">%</div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="flex-shrink:0;">
+        <svg id="gauge-svg" width="160" height="100" viewBox="0 0 200 120" style="touch-action:none; cursor:pointer; display:block;">
+          <path id="gauge-bg"   fill="none" stroke="#e0e4ec" stroke-width="18" stroke-linecap="round"/>
+          <path id="gauge-fill" fill="none" stroke="#00b67a" stroke-width="18" stroke-linecap="round"/>
+          <circle id="gauge-thumb" r="14" fill="#00b67a" stroke="#fff" stroke-width="4"/>
+          <text x="100" y="96" text-anchor="middle" font-family="'Syne',sans-serif" font-size="38" font-weight="800" fill="#0d1117" id="gauge-label">20</text>
+          <text x="100" y="116" text-anchor="middle" font-family="'Syne',sans-serif" font-size="14" font-weight="700" fill="#00b67a">%</text>
+        </svg>
+        <div style="text-align:center;font-size:9px;color:#a0aabb;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;">Glisser sur l'arc</div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:8px; padding-top:6px; min-width:0;">
+      <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-width:0;">
         <div>
           <div class="m-val-sm" id="m-kwh">14,8 <span class="m-unit-sm">kWh</span></div>
           <div class="m-lbl-sm">À recharger</div>
@@ -347,13 +353,6 @@
         </div>
       </div>
     </div>
-    <div class="soc-sub">Glisser pour ajuster</div>
-    <input type="range" id="soc" min="0" max="79" value="20" step="1" oninput="update()">
-    <div class="bar-wrap">
-      <div class="bar-fill" id="soc-bar" style="width:25%"></div>
-      <div class="bar-tick"></div>
-    </div>
-    <div class="track-labels"><span>0 %</span><span></span></div>
   </div>
 
   <!-- Mode -->
@@ -449,6 +448,60 @@
     label.textContent = open ? 'Masquer le détail' : 'Voir le détail du calcul';
   }
 
+  // ---- Jauge circulaire ----
+  const GCX=100, GCY=108, GR=82;
+  const G_START = Math.PI, G_END = 2*Math.PI;
+  let gaugeVal = 20;
+
+  function gPolar(a){ return { x: GCX+GR*Math.cos(a), y: GCY+GR*Math.sin(a) }; }
+  function gArc(a1,a2){
+    const s=gPolar(a1), e=gPolar(a2), lg=(a2-a1)>Math.PI?1:0;
+    return `M${s.x} ${s.y} A${GR} ${GR} 0 ${lg} 1 ${e.x} ${e.y}`;
+  }
+  function valToAngle(v){ return G_START+(v/79)*(G_END-G_START); }
+
+  function renderGauge(){
+    document.getElementById('gauge-bg').setAttribute('d', gArc(G_START, G_END));
+    const a = valToAngle(gaugeVal);
+    document.getElementById('gauge-fill').setAttribute('d', gArc(G_START, a));
+    const p = gPolar(a);
+    const th = document.getElementById('gauge-thumb');
+    th.setAttribute('cx', p.x); th.setAttribute('cy', p.y);
+    document.getElementById('gauge-label').textContent = gaugeVal;
+    document.getElementById('soc-big') && (document.getElementById('soc-big').textContent = gaugeVal);
+    update();
+  }
+
+  function angleFromEvent(e){
+    const svg = document.getElementById('gauge-svg');
+    const rect = svg.getBoundingClientRect();
+    const sx=200/rect.width, sy=120/rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    const dx=(src.clientX-rect.left)*sx-GCX, dy=(src.clientY-rect.top)*sy-GCY;
+    return Math.atan2(dy,dx);
+  }
+
+  function applyAngle(raw){
+    let a = raw;
+    if(a>=0 && a<G_START) a=G_END;
+    if(a<G_START) a=G_START;
+    if(a>G_END) a=G_END;
+    gaugeVal = Math.round(((a-G_START)/(G_END-G_START))*79);
+    gaugeVal = Math.max(0,Math.min(79,gaugeVal));
+    renderGauge();
+  }
+
+  let gDrag=false;
+  const gSvg=document.getElementById('gauge-svg');
+  gSvg.addEventListener('mousedown',  e=>{gDrag=true; applyAngle(angleFromEvent(e));});
+  gSvg.addEventListener('touchstart', e=>{e.preventDefault(); gDrag=true; applyAngle(angleFromEvent(e));},{passive:false});
+  window.addEventListener('mousemove',  e=>{if(gDrag) applyAngle(angleFromEvent(e));});
+  window.addEventListener('touchmove',  e=>{if(gDrag){e.preventDefault(); applyAngle(angleFromEvent(e));}},{passive:false});
+  window.addEventListener('mouseup',  ()=>gDrag=false);
+  window.addEventListener('touchend', ()=>gDrag=false);
+
+  function getSoc(){ return gaugeVal; }
+
   function setMode(el, idx) {
     document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
@@ -457,16 +510,14 @@
 
   function update() {
     const M = MODES[modeIdx];
-    const soc = parseInt(document.getElementById('soc').value);
+    const soc = getSoc();
     const missing = Math.max(0, TARGET - soc);
     const kwhNet  = BATTERY * missing / 100;
     const kwhGrid = kwhNet / M.eff;
     const hours   = kwhGrid / M.power;
     const totalMins = Math.round(hours * 60);
 
-    document.getElementById('soc-big').textContent = soc;
-    document.getElementById('soc-bar').style.width = ((soc/80)*100) + '%';
-    document.getElementById('m-kwh').innerHTML = kwhNet.toFixed(1).replace('.',',') + ' <span class="m-unit">kWh</span>';
+    document.getElementById('m-kwh').innerHTML = kwhNet.toFixed(1).replace('.',',') + ' <span class="m-unit-sm">kWh</span>';
     document.getElementById('m-dur').textContent = missing===0 ? '0h00' : fmtH(hours);
     document.getElementById('d-soc').textContent   = soc + ' %';
     document.getElementById('d-power').textContent = M.power.toFixed(1).replace('.',',') + ' kW';
@@ -502,11 +553,11 @@
     dRes.textContent    = startStr + (prev ? ' -1j' : '');
   }
 
-  // Init time input
+  // Init
   const now = new Date();
   const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
   document.getElementById('end-time').value = t;
-  update();
+  renderGauge();
 
   // ---- PWA Install prompt ----
   let deferredPrompt = null;
