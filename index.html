@@ -82,7 +82,7 @@
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 0 0 4px #00b67a18;
       flex-shrink: 0;
-      background: #0d1117;
+      background: #e6f7f1;
     }
     .logo-ring svg { display: block; }
     .header-text h1 {
@@ -192,7 +192,7 @@
     .m-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 7px; }
 
     /* Mode tiles */
-    .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .mode-tile {
       background: var(--bg3); border: 1.5px solid var(--border);
       border-radius: 12px; padding: 12px 14px; cursor: pointer;
@@ -310,8 +310,8 @@
 
   <!-- Install banner -->
   <div id="install-banner">
-    <div style="width:32px;height:32px;border-radius:50%;background:#0d1117;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3fffb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <div style="width:32px;height:32px;border-radius:50%;background:#e6f7f1;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     </div>
     <p><strong>Installer l'application</strong>Ajouter à l'écran d'accueil pour un accès rapide</p>
     <button class="install-btn" id="install-btn">Installer</button>
@@ -320,7 +320,7 @@
   <!-- Header -->
   <div class="header">
     <div class="logo-ring">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3fffb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     </div>
     <div class="header-text">
       <h1>Renault Zoé</h1>
@@ -339,9 +339,8 @@
         </div>
         <div style="display:flex; gap:10px;">
           <button id="soc-minus" style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#f0f2f5; color:#0d1117; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">−</button>
-          <button id="soc-plus"  style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#0d1117; color:#00b67a; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">+</button>
+          <button id="soc-plus"  style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#e6f7f1; color:#00b67a; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">+</button>
         </div>
-        <div style="font-size:10px; color:#a0aabb; text-align:center; margin-top:8px; letter-spacing:.04em;">Appui court ±1 % · Appui long ±10 %</div>
       </div>
       <div style="display:flex; flex-direction:column; gap:12px; min-width:90px;">
         <div>
@@ -363,17 +362,10 @@
       <div class="mode-tile active" onclick="setMode(this,0)">
         <div class="tile-pw">3,7 kW</div>
         <div class="tile-nm">Prise renforcée</div>
-        <div class="tile-eff">Rendement 90 %</div>
       </div>
       <div class="mode-tile" onclick="setMode(this,1)">
-        <div class="tile-pw">2,3 kW</div>
-        <div class="tile-nm">Prise domestique</div>
-        <div class="tile-eff">Rendement 90 %</div>
-      </div>
-      <div class="mode-tile" onclick="setMode(this,2)">
         <div class="tile-pw">1,8 kW</div>
         <div class="tile-nm">Prise lente</div>
-        <div class="tile-eff">Rendement 90 %</div>
       </div>
     </div>
   </div>
@@ -381,10 +373,7 @@
   <!-- Calc mode + time -->
   <div class="card" style="animation-delay:.12s">
     <div class="card-label">Heure de fin souhaitée</div>
-    <div>
-      <div class="time-lbl">Je veux finir à</div>
-      <input type="time" id="end-time" oninput="update()">
-    </div>
+    <input type="time" id="end-time" oninput="update()">
   </div>
 
   <!-- Result -->
@@ -424,7 +413,6 @@
   // ---- Logic ----
   const MODES = [
     { power: 3.7, eff: 0.90 },
-    { power: 2.3, eff: 0.90 },
     { power: 1.8, eff: 0.90 },
   ];
   let modeIdx = 0;
