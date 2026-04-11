@@ -172,7 +172,7 @@
     .m-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 7px; }
 
     /* Mode tiles */
-    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .mode-tile {
       background: var(--bg3); border: 1px solid var(--border2);
       border-radius: 12px; padding: 12px 14px; cursor: pointer;
@@ -343,40 +343,27 @@
     <div class="card-label">Mode de recharge</div>
     <div class="mode-grid">
       <div class="mode-tile active" onclick="setMode(this,0)">
-        <div class="tile-pw">7,4 kW</div>
-        <div class="tile-nm">Wallbox</div>
-        <div class="tile-eff">Rendement 90 %</div>
-      </div>
-      <div class="mode-tile" onclick="setMode(this,1)">
-        <div class="tile-pw">22 kW</div>
-        <div class="tile-nm">Borne publique</div>
-        <div class="tile-eff">Rendement 90 %</div>
-      </div>
-      <div class="mode-tile" onclick="setMode(this,2)">
         <div class="tile-pw">3,7 kW</div>
         <div class="tile-nm">Prise renforcée</div>
         <div class="tile-eff">Rendement 90 %</div>
       </div>
-      <div class="mode-tile" onclick="setMode(this,3)">
+      <div class="mode-tile" onclick="setMode(this,1)">
         <div class="tile-pw">2,3 kW</div>
         <div class="tile-nm">Prise domestique</div>
-        <div class="tile-eff">Rendement 82,6 %</div>
+        <div class="tile-eff">Rendement 90 %</div>
+      </div>
+      <div class="mode-tile" onclick="setMode(this,2)">
+        <div class="tile-pw">1,8 kW</div>
+        <div class="tile-nm">Prise lente</div>
+        <div class="tile-eff">Rendement 90 %</div>
       </div>
     </div>
   </div>
 
   <!-- Calc mode + time -->
   <div class="card" style="animation-delay:.12s">
-    <div class="card-label">Mode de calcul</div>
-    <div class="calc-toggle">
-      <button class="calc-btn active" id="btn-start" onclick="setCalcMode('start')">Heure de branchement →</button>
-      <button class="calc-btn" id="btn-end" onclick="setCalcMode('end')">← Heure de fin</button>
-    </div>
-    <div id="panel-start">
-      <div class="time-lbl">Je branche à</div>
-      <input type="time" id="start-time" oninput="update()">
-    </div>
-    <div id="panel-end" style="display:none">
+    <div class="card-label">Heure de fin souhaitée</div>
+    <div>
       <div class="time-lbl">Je veux finir à</div>
       <input type="time" id="end-time" oninput="update()">
     </div>
@@ -393,13 +380,15 @@
   <div class="card" style="animation-delay:.16s">
     <div class="card-label">Détail du calcul</div>
     <table class="detail-table">
-      <tr><td>Batterie</td><td>52 kWh</td></tr>
+      <tr><td>Capacité nominale</td><td>52 kWh</td></tr>
+      <tr><td>SoH</td><td>95 %</td></tr>
+      <tr><td>Capacité réelle</td><td>49,4 kWh</td></tr>
       <tr><td>SoC départ</td><td id="d-soc">20 %</td></tr>
       <tr><td>SoC cible</td><td>80 %</td></tr>
-      <tr><td>Puissance</td><td id="d-power">7,4 kW</td></tr>
+      <tr><td>Puissance</td><td id="d-power">1,8 kW</td></tr>
       <tr><td>Rendement</td><td id="d-eff">90,0 %</td></tr>
-      <tr><td>Énergie réseau</td><td id="d-kwh">34,7 kWh</td></tr>
-      <tr><td id="d-label">Fin de charge</td><td id="d-result">--:--</td></tr>
+      <tr><td>Énergie réseau</td><td id="d-kwh">--</td></tr>
+      <tr><td id="d-label">Brancher à</td><td id="d-result">--:--</td></tr>
     </table>
   </div>
 
@@ -408,13 +397,13 @@
 <script>
   // ---- Logic ----
   const MODES = [
-    { power: 7.4,  eff: 0.90  },
-    { power: 22,   eff: 0.90  },
-    { power: 3.7,  eff: 0.90  },
-    { power: 2.3,  eff: 0.826 },
+    { power: 3.7, eff: 0.90 },
+    { power: 2.3, eff: 0.90 },
+    { power: 1.8, eff: 0.90 },
   ];
-  let modeIdx = 0, calcMode = 'start';
-  const BATTERY = 52, TARGET = 80;
+  let modeIdx = 0;
+  const BATTERY = 52 * 0.95; // 49,4 kWh capacité réelle (SoH 95 %)
+  const TARGET = 80;
 
   function pad(n) { return String(n).padStart(2,'0'); }
   function fmtH(h) {
@@ -428,16 +417,6 @@
     document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     modeIdx = idx; update();
-  }
-
-  function setCalcMode(m) {
-    calcMode = m;
-    document.getElementById('btn-start').className = 'calc-btn' + (m==='start' ? ' active' : '');
-    document.getElementById('btn-end').className   = 'calc-btn' + (m==='end'   ? ' active' : '');
-    document.getElementById('panel-start').style.display = m==='start' ? '' : 'none';
-    document.getElementById('panel-end').style.display   = m==='end'   ? '' : 'none';
-    document.getElementById('d-label').textContent = m==='start' ? 'Fin de charge' : 'Brancher à';
-    update();
   }
 
   function update() {
@@ -472,41 +451,25 @@
       dRes.textContent    = '—'; return;
     }
 
-    if (calcMode === 'start') {
-      const val = document.getElementById('start-time').value;
-      if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de branchement"; dRes.textContent='--:--'; return; }
-      const [h,mn] = val.split(':').map(Number);
-      const sm = h*60+mn;
-      const em = (sm+totalMins) % (24*60);
-      const endStr = pad(Math.floor(em/60)) + ':' + pad(em%60);
-      const next = (sm+totalMins) >= 24*60;
-      card.className = 'result-card ' + (next ? 'state-warn' : 'state-ok');
-      eyebrow.textContent = 'Fin de charge estimée';
-      timeEl.textContent  = endStr;
-      sub.textContent     = next ? 'Le lendemain · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
-      dRes.textContent    = endStr + (next ? ' +1j' : '');
-    } else {
-      const val = document.getElementById('end-time').value;
-      if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de fin souhaitée"; dRes.textContent='--:--'; return; }
-      const [h,mn] = val.split(':').map(Number);
-      const em = h*60+mn;
-      let sm = em - totalMins;
-      const prev = sm < 0;
-      sm = ((sm % (24*60)) + (24*60)) % (24*60);
-      const startStr = pad(Math.floor(sm/60)) + ':' + pad(sm%60);
-      card.className = 'result-card ' + (prev ? 'state-warn' : 'state-ok');
-      eyebrow.textContent = 'Branchez la voiture à';
-      timeEl.textContent  = startStr;
-      sub.textContent     = prev ? 'La veille · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
-      dRes.textContent    = startStr + (prev ? ' -1j' : '');
-    }
+    const val = document.getElementById('end-time').value;
+    if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de fin souhaitée"; dRes.textContent='--:--'; return; }
+    const [h,mn] = val.split(':').map(Number);
+    const em = h*60+mn;
+    let sm = em - totalMins;
+    const prev = sm < 0;
+    sm = ((sm % (24*60)) + (24*60)) % (24*60);
+    const startStr = pad(Math.floor(sm/60)) + ':' + pad(sm%60);
+    card.className = 'result-card ' + (prev ? 'state-warn' : 'state-ok');
+    eyebrow.textContent = 'Branchez la voiture à';
+    timeEl.textContent  = startStr;
+    sub.textContent     = prev ? 'La veille · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
+    dRes.textContent    = startStr + (prev ? ' -1j' : '');
   }
 
-  // Init time inputs
+  // Init time input
   const now = new Date();
   const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
-  document.getElementById('start-time').value = t;
-  document.getElementById('end-time').value   = t;
+  document.getElementById('end-time').value = t;
   update();
 
   // ---- PWA Install prompt ----
