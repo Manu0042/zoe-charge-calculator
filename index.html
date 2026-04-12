@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#080a10">
+  <meta name="theme-color" content="#f2f4f7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Zoé Charge">
@@ -12,315 +12,157 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --green: #00b67a;
-      --green-dim: #007a52;
-      --green-dark: #e6f7f1;
-      --green-accent: #00b67a;
-      --bg: #f2f4f7;
-      --bg1: #ffffff;
-      --bg2: #f8f9fb;
-      --bg3: #f0f2f5;
-      --border: #e0e4ec;
-      --border2: #e8ebf2;
-      --text: #0d1117;
-      --text2: #1e2530;
-      --muted: #7a8599;
-      --muted2: #a0aabb;
-      --warn: #c47a00;
-      --warn-bg: #fffbf0;
+      --green:       #00b67a;
+      --green-dim:   #007a52;
+      --green-light: #e6f7f1;
+      --bg:          #f2f4f7;
+      --bg1:         #ffffff;
+      --bg3:         #f0f2f5;
+      --border:      #e0e4ec;
+      --text:        #0d1117;
+      --muted:       #7a8599;
+      --muted2:      #a0aabb;
+      --warn-bg:     #fffbf0;
       --warn-border: #f0c060;
+      --warn-text:   #c47a00;
     }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      overflow-x: hidden;
-    }
-
-    body {
-      padding-bottom: env(safe-area-inset-bottom, 20px);
-    }
-
-    /* Grid texture */
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
     body::before {
-      content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background-image:
-        linear-gradient(rgba(0,182,122,.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,182,122,.06) 1px, transparent 1px);
-      background-size: 40px 40px;
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: linear-gradient(rgba(0,182,122,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,182,122,.05) 1px,transparent 1px);
+      background-size: 36px 36px;
     }
-
     .app {
       position: relative; z-index: 1;
-      max-width: 480px; margin: 0 auto;
-      padding: 0 16px 40px;
+      width: 100%; max-width: 420px; margin: 0 auto;
+      height: 100dvh;
+      padding: env(safe-area-inset-top,8px) 14px env(safe-area-inset-bottom,8px);
+      display: flex; flex-direction: column; gap: 8px;
     }
-
-    /* Status bar spacer */
-    .statusbar-spacer {
-      height: calc(env(safe-area-inset-top, 0px) + 16px);
-    }
-
-    /* Header */
-    .header {
-      display: flex; align-items: center; gap: 14px;
-      padding: 8px 0 24px;
-      animation: fadeUp .4s ease both;
-    }
+    .header { display:flex; align-items:center; gap:10px; flex-shrink:0; padding:4px 0; }
     .logo-ring {
-      width: 46px; height: 46px; border-radius: 50%;
-      border: 2px solid var(--green);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 4px #00b67a18;
-      flex-shrink: 0;
-      background: #e6f7f1;
+      width:34px; height:34px; border-radius:50%;
+      border:2px solid var(--green); background:var(--green-light);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 0 0 3px #00b67a14; flex-shrink:0;
     }
-    .logo-ring svg { display: block; }
-    .header-text h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -.3px;
-    }
-    .header-text p { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-top: 3px; }
+    .header-text h1 { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text); letter-spacing:-.2px; }
+    .header-text p  { font-size:9px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-top:1px; }
 
-    /* Cards */
     .card {
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px #0d111714, 0 8px 24px #0d111708;
-      animation: fadeUp .4s ease both;
+      background:var(--bg1); border:1px solid var(--border);
+      border-radius:14px; padding:11px 14px;
+      box-shadow:0 1px 4px #0d111710,0 4px 12px #0d111706;
+      flex-shrink:0;
     }
-    .card-label {
-      font-size: 10px; color: var(--muted2);
-      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px;
-    }
+    .card-label { font-size:9px; color:var(--muted2); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
 
-    /* SOC */
-    .soc-hero { display: flex; align-items: baseline; gap: 5px; line-height: 1; }
-    .soc-num {
-      font-family: 'Syne', sans-serif; font-size: 76px; font-weight: 800;
-      letter-spacing: -5px; color: var(--text);
-      transition: color .2s;
-    }
-    .soc-pct { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 700; color: var(--green); }
-    .soc-sub { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-top: 6px; }
+    .soc-row { display:flex; align-items:center; gap:12px; }
+    .soc-display { display:flex; align-items:baseline; gap:3px; flex-shrink:0; }
+    .soc-num { font-family:'Syne',sans-serif; font-size:62px; font-weight:800; letter-spacing:-4px; color:var(--text); line-height:1; }
+    .soc-pct { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; color:var(--green); }
 
-    input[type=range] {
-      width: 100%; margin: 14px 0 6px;
-      -webkit-appearance: none; appearance: none;
-      background: transparent; cursor: pointer;
-      touch-action: pan-y;
+    .stepper-btns { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+    .stp {
+      width:42px; height:42px; border:none; border-radius:10px;
+      font-size:24px; font-weight:300; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      -webkit-tap-highlight-color:transparent; user-select:none; transition:transform .1s;
     }
-    input[type=range]::-webkit-slider-runnable-track {
-      height: 3px; background: var(--border); border-radius: 99px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 26px; height: 26px; border-radius: 50%; margin-top: -11.5px;
-      background: var(--green);
-      box-shadow: 0 0 0 4px #00b67a22, 0 2px 6px #00000022;
-      transition: box-shadow .2s;
-    }
-    input[type=range]:active::-webkit-slider-thumb {
-      box-shadow: 0 0 0 8px #00b67a33, 0 2px 6px #00000022;
-    }
+    .stp:active { transform:scale(.91); }
+    .stp-p { background:var(--green-light); color:var(--green-dim); }
+    .stp-m { background:var(--bg3); color:var(--text); }
 
-    .bar-wrap { position: relative; height: 4px; background: var(--border); border-radius: 99px; margin: 4px 0; }
-    .bar-fill {
-      height: 4px; border-radius: 99px;
-      background: linear-gradient(90deg, #007a52, var(--green));
-      transition: width .3s ease; position: relative;
-    }
-    .bar-fill::after {
-      content: ''; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
-      width: 10px; height: 10px; border-radius: 50%; background: var(--green);
-      box-shadow: 0 0 6px #00b67a88;
-    }
-    .bar-tick { position: absolute; right: 0; top: -7px; bottom: -7px; width: 2px; background: var(--border2); border-radius: 1px; }
-    .bar-tick::after {
-      content: '80 %'; position: absolute; right: 5px; top: -14px;
-      font-size: 9px; color: var(--muted2); white-space: nowrap;
-    }
-    .track-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted2); margin-top: 6px; }
+    .metrics-col { display:flex; flex-direction:column; gap:6px; flex:1; min-width:0; }
+    .mi-val { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:var(--text); line-height:1; }
+    .mi-unit { font-size:10px; color:var(--muted); font-weight:500; }
+    .mi-lbl { font-size:8px; color:var(--muted2); text-transform:uppercase; letter-spacing:.07em; margin-top:1px; }
 
-    /* Metrics inline dans SOC */
-    .m-val-sm {
-      font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
-      color: var(--text); line-height: 1;
-    }
-    .m-unit-sm { font-size: 11px; color: var(--muted); font-weight: 600; }
-    .m-lbl-sm { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; }
-
-    /* Detail toggle */
-    .detail-toggle {
-      background: none; border: none; cursor: pointer;
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      color: var(--muted); letter-spacing: .04em;
-      padding: 4px 0; display: inline-flex; align-items: center;
-      -webkit-tap-highlight-color: transparent;
-      transition: color .2s;
-    }
-    .detail-toggle:hover { color: var(--text2); }
-
-    /* Metrics (conservé pour compatibilité) */
-    .metrics {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-      margin-bottom: 12px;
-      animation: fadeUp .4s .06s ease both;
-    }
-    .metric-card {
-      background: var(--bg1);
-      border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px;
-      box-shadow: 0 2px 8px #0d111710;
-    }
-    .m-val {
-      font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
-      color: var(--text); line-height: 1;
-    }
-    .m-unit { font-size: 13px; color: var(--muted); font-weight: 600; }
-    .m-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 7px; }
-
-    /* Mode tiles */
-    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
     .mode-tile {
-      background: var(--bg3); border: 1.5px solid var(--border);
-      border-radius: 12px; padding: 12px 14px; cursor: pointer;
-      box-shadow: 0 1px 3px #0d111710;
-      transition: border-color .15s, background .15s, box-shadow .15s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      background:var(--bg3); border:1.5px solid var(--border);
+      border-radius:10px; padding:9px 12px; cursor:pointer;
+      transition:border-color .15s,background .15s;
+      -webkit-tap-highlight-color:transparent; user-select:none;
     }
-    .mode-tile:active { transform: scale(.97); }
-    .mode-tile.active {
-      border-color: var(--green); background: var(--green-dark);
-      box-shadow: 0 0 0 3px #00b67a18, 0 2px 8px #00b67a18;
-    }
-    .tile-pw { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--text2); }
-    .mode-tile.active .tile-pw { color: var(--green-dim); }
-    .tile-nm { font-size: 10px; color: var(--muted); margin-top: 3px; }
-    .tile-eff { font-size: 9px; color: var(--muted2); margin-top: 6px; }
-    .mode-tile.active .tile-eff { color: var(--green); }
+    .mode-tile:active { transform:scale(.96); }
+    .mode-tile.active { border-color:var(--green); background:var(--green-light); }
+    .tile-pw { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--text); }
+    .mode-tile.active .tile-pw { color:var(--green-dim); }
+    .tile-nm { font-size:9px; color:var(--muted); margin-top:2px; }
 
-    /* Calc toggle */
-    .calc-toggle {
-      display: flex; background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden; margin-bottom: 14px;
-    }
-    .calc-btn {
-      flex: 1; border: none; background: transparent; padding: 11px 8px;
-      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
-      cursor: pointer; transition: background .15s, color .15s;
-      border-right: 1px solid var(--border);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .calc-btn:last-child { border-right: none; }
-    .calc-btn.active { background: #fff; color: var(--green-dim); font-weight: 500; }
-
-    /* Time input */
-    .time-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
     input[type=time] {
-      background: var(--bg3); border: 1.5px solid var(--border);
-      border-radius: 10px; padding: 12px 16px;
-      font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500;
-      color: var(--text); width: 100%;
-      box-shadow: inset 0 1px 3px #0d111710;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
+      background:var(--bg3); border:1.5px solid var(--border);
+      border-radius:10px; padding:8px 14px;
+      font-family:'DM Mono',monospace; font-size:28px; font-weight:500;
+      color:var(--text); width:100%;
+      transition:border-color .15s; -webkit-appearance:none;
     }
-    input[type=time]:focus {
-      outline: none; border-color: var(--green);
-      box-shadow: 0 0 0 3px #00b67a18;
+    input[type=time]:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px #00b67a14; }
+
+    .result-card { border-radius:14px; padding:12px 14px; flex-shrink:0; transition:background .3s,border-color .3s; }
+    .result-card.state-info { background:var(--bg1); border:1px solid var(--border); }
+    .result-card.state-ok   { background:var(--green-light); border:1.5px solid #00b67a55; }
+    .result-card.state-warn { background:var(--warn-bg); border:1.5px solid var(--warn-border); }
+
+    .res-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .res-eyebrow { font-size:9px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:2px; }
+    .state-info .res-eyebrow { color:var(--muted2); }
+    .state-ok   .res-eyebrow { color:var(--green-dim); }
+    .state-warn .res-eyebrow { color:var(--warn-text); }
+
+    .res-time { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; letter-spacing:-2px; line-height:1; transition:color .3s; }
+    .state-info .res-time { color:var(--muted2); }
+    .state-ok   .res-time { color:#007a52; }
+    .state-warn .res-time { color:var(--warn-text); }
+
+    .res-sub { font-size:10px; }
+    .state-info .res-sub { color:var(--muted2); }
+    .state-ok   .res-sub { color:var(--green-dim); }
+    .state-warn .res-sub { color:var(--warn-text); }
+
+    .detail-row { text-align:center; flex-shrink:0; }
+    .detail-toggle {
+      background:none; border:none; cursor:pointer;
+      font-family:'DM Mono',monospace; font-size:10px; color:var(--muted);
+      display:inline-flex; align-items:center; gap:4px;
+      -webkit-tap-highlight-color:transparent; padding:2px 0;
     }
 
-    /* Result */
-    .result-card {
-      border-radius: 18px; padding: 20px;
-      margin-bottom: 12px;
-      animation: fadeUp .4s .12s ease both;
-      transition: background .35s, border-color .35s, box-shadow .35s;
-    }
-    .result-card.state-info { background: var(--bg1); border: 1px solid var(--border); box-shadow: 0 2px 12px #0d111710; }
-    .result-card.state-ok   { background: #e6f7f1; border: 1.5px solid #00b67a55; box-shadow: 0 2px 16px #00b67a14; }
-    .result-card.state-warn { background: var(--warn-bg); border: 1.5px solid var(--warn-border); box-shadow: 0 2px 16px #c47a0014; }
+    .detail-table { width:100%; border-collapse:collapse; }
+    .detail-table td { padding:5px 0; font-size:11px; border-bottom:1px solid var(--border); }
+    .detail-table tr:last-child td { border-bottom:none; }
+    .detail-table td:first-child { color:var(--muted); }
+    .detail-table td:last-child  { text-align:right; color:var(--text); font-weight:500; }
 
-    .res-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
-    .state-info .res-eyebrow { color: var(--muted); }
-    .state-ok   .res-eyebrow { color: var(--green-dim); }
-    .state-warn .res-eyebrow { color: #8c6000; }
-
-    .res-time {
-      font-family: 'Syne', sans-serif; font-size: 62px; font-weight: 800;
-      letter-spacing: -3px; line-height: 1;
-      transition: color .3s;
-    }
-    .state-info .res-time { color: var(--muted2); }
-    .state-ok   .res-time { color: #008055; }
-    .state-warn .res-time { color: #a06000; }
-
-    .res-sub { font-size: 11px; margin-top: 10px; transition: color .3s; }
-    .state-info .res-sub { color: var(--muted); }
-    .state-ok   .res-sub { color: var(--green-dim); }
-    .state-warn .res-sub { color: #8c6000; }
-
-    /* Detail table */
-    .detail-table { width: 100%; border-collapse: collapse; }
-    .detail-table td { padding: 8px 0; font-size: 12px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
-    .detail-table tr:last-child td { border-bottom: none; }
-    .detail-table td:first-child { color: var(--muted); }
-    .detail-table td:last-child { text-align: right; color: var(--text2); font-weight: 500; }
-
-    /* Install banner */
     #install-banner {
-      display: none; align-items: center; gap: 12px;
-      background: #e6f7f1; border: 1px solid #00b67a55;
-      border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
-      animation: fadeUp .4s ease both;
+      display:none; align-items:center; gap:10px; flex-shrink:0;
+      background:var(--green-light); border:1px solid #00b67a44;
+      border-radius:12px; padding:10px 12px;
     }
-    #install-banner p { font-size: 12px; color: var(--text2); flex: 1; line-height: 1.5; }
-    #install-banner strong { color: var(--green-dim); display: block; font-family: 'Syne', sans-serif; font-size: 13px; margin-bottom: 2px; }
-    .install-btn {
-      background: var(--green); color: #fff; border: none;
-      border-radius: 8px; padding: 8px 14px; font-family: 'DM Mono', monospace;
-      font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    #install-banner p { font-size:11px; color:var(--text); flex:1; line-height:1.4; }
+    #install-banner strong { color:var(--green-dim); display:block; font-family:'Syne',sans-serif; font-size:12px; }
+    .install-btn { background:var(--green); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-family:'DM Mono',monospace; font-size:11px; cursor:pointer; flex-shrink:0; }
   </style>
 </head>
 <body>
-
-<div class="statusbar-spacer"></div>
-
 <div class="app">
 
-  <!-- Install banner -->
   <div id="install-banner">
-    <div style="width:32px;height:32px;border-radius:50%;background:#e6f7f1;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--green-light);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     </div>
-    <p><strong>Installer l'application</strong>Ajouter à l'écran d'accueil pour un accès rapide</p>
+    <p><strong>Installer l'application</strong>Ajouter à l'écran d'accueil</p>
     <button class="install-btn" id="install-btn">Installer</button>
   </div>
 
-  <!-- Header -->
   <div class="header">
     <div class="logo-ring">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00b67a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     </div>
     <div class="header-text">
       <h1>Renault Zoé</h1>
@@ -328,35 +170,31 @@
     </div>
   </div>
 
-  <!-- SOC + métriques inline avec stepper -->
-  <div class="card" style="animation-delay:0s">
+  <div class="card">
     <div class="card-label">État de charge actuel</div>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <div style="flex:1; min-width:0;">
-        <div style="display:flex; align-items:baseline; gap:5px; line-height:1; margin-bottom:14px;">
-          <div style="font-family:'Syne',sans-serif; font-size:72px; font-weight:800; letter-spacing:-4px; color:#0d1117; line-height:1;" id="soc-big">20</div>
-          <div style="font-family:'Syne',sans-serif; font-size:32px; font-weight:700; color:#00b67a;">%</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <button id="soc-minus" style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#f0f2f5; color:#0d1117; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">−</button>
-          <button id="soc-plus"  style="flex:1; padding:14px; border:none; border-radius:12px; font-size:28px; font-weight:300; background:#e6f7f1; color:#00b67a; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">+</button>
-        </div>
+    <div class="soc-row">
+      <div class="soc-display">
+        <div class="soc-num" id="soc-big">20</div>
+        <div class="soc-pct">%</div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:12px; min-width:90px;">
+      <div class="stepper-btns">
+        <button class="stp stp-p" id="soc-plus">+</button>
+        <button class="stp stp-m" id="soc-minus">−</button>
+      </div>
+      <div class="metrics-col">
         <div>
-          <div class="m-val-sm" id="m-kwh">14,8 <span class="m-unit-sm">kWh</span></div>
-          <div class="m-lbl-sm">À recharger</div>
+          <div class="mi-val" id="m-kwh">14,8 <span class="mi-unit">kWh</span></div>
+          <div class="mi-lbl">À recharger</div>
         </div>
         <div>
-          <div class="m-val-sm" id="m-dur">9h09</div>
-          <div class="m-lbl-sm">Durée estimée</div>
+          <div class="mi-val" id="m-dur">9h09</div>
+          <div class="mi-lbl">Durée estimée</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Mode -->
-  <div class="card" style="animation-delay:.08s">
+  <div class="card">
     <div class="card-label">Mode de recharge</div>
     <div class="mode-grid">
       <div class="mode-tile active" onclick="setMode(this,0)">
@@ -370,183 +208,160 @@
     </div>
   </div>
 
-  <!-- Calc mode + time -->
-  <div class="card" style="animation-delay:.12s">
+  <div class="card">
     <div class="card-label">Heure de fin souhaitée</div>
     <input type="time" id="end-time" oninput="update()">
   </div>
 
-  <!-- Result -->
   <div class="result-card state-info" id="result-card">
-    <div class="res-eyebrow" id="res-eyebrow">En attente</div>
-    <div class="res-time" id="res-time">--:--</div>
-    <div class="res-sub" id="res-sub">Entrez une heure pour lancer le calcul</div>
+    <div class="res-row">
+      <div>
+        <div class="res-eyebrow" id="res-eyebrow">En attente</div>
+        <div class="res-time" id="res-time">--:--</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="res-sub" id="res-sub">Entrez une heure</div>
+      </div>
+    </div>
   </div>
 
-  <!-- Detail (masqué par défaut) -->
-  <div style="text-align:center; margin-bottom:12px;">
-    <button class="detail-toggle" id="detail-toggle" onclick="toggleDetail()">
-      <span id="detail-toggle-label">Voir le détail du calcul</span>
-      <svg id="detail-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:6px;transition:transform .3s;vertical-align:middle;">
+  <div class="detail-row">
+    <button class="detail-toggle" onclick="toggleDetail()">
+      <span id="detail-toggle-label">Voir le détail</span>
+      <svg id="detail-chevron" width="11" height="11" viewBox="0 0 12 12" fill="none" style="transition:transform .3s;">
         <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   </div>
-  <div class="card detail-card" id="detail-panel" style="display:none; animation-delay:0s">
-    <div class="card-label">Détail du calcul</div>
+
+  <div class="card" id="detail-panel" style="display:none; overflow-y:auto;">
     <table class="detail-table">
       <tr><td>Capacité nominale</td><td>52 kWh</td></tr>
       <tr><td>SoH</td><td>95 %</td></tr>
       <tr><td>Capacité réelle</td><td>49,4 kWh</td></tr>
       <tr><td>SoC départ</td><td id="d-soc">20 %</td></tr>
       <tr><td>SoC cible</td><td>80 %</td></tr>
-      <tr><td>Puissance</td><td id="d-power">1,8 kW</td></tr>
+      <tr><td>Puissance</td><td id="d-power">3,7 kW</td></tr>
       <tr><td>Rendement</td><td id="d-eff">90,0 %</td></tr>
       <tr><td>Énergie réseau</td><td id="d-kwh">--</td></tr>
-      <tr><td id="d-label">Brancher à</td><td id="d-result">--:--</td></tr>
+      <tr><td>Brancher à</td><td id="d-result">--:--</td></tr>
     </table>
   </div>
 
 </div>
-
 <script>
-  // ---- Logic ----
-  const MODES = [
-    { power: 3.7, eff: 0.90 },
-    { power: 1.8, eff: 0.90 },
-  ];
-  let modeIdx = 0;
-  const BATTERY = 52 * 0.95; // 49,4 kWh capacité réelle (SoH 95 %)
-  const TARGET = 80;
+  const MODES=[{power:3.7,eff:.90},{power:1.8,eff:.90}];
+  let modeIdx=0;
+  const BATTERY=52*.95, TARGET=80;
 
-  function pad(n) { return String(n).padStart(2,'0'); }
-  function fmtH(h) {
-    const hh = Math.floor(h), mm = Math.round((h-hh)*60);
-    if (hh === 0) return mm + 'min';
-    if (mm === 0) return hh + 'h00';
-    return hh + 'h' + pad(mm);
+  function pad(n){return String(n).padStart(2,'0');}
+  function fmtH(h){
+    const hh=Math.floor(h),mm=Math.round((h-hh)*60);
+    if(hh===0)return mm+'min';
+    if(mm===0)return hh+'h00';
+    return hh+'h'+pad(mm);
   }
 
-  function toggleDetail() {
-    const panel = document.getElementById('detail-panel');
-    const chevron = document.getElementById('detail-chevron');
-    const label = document.getElementById('detail-toggle-label');
-    const open = panel.style.display === 'none';
-    panel.style.display = open ? '' : 'none';
-    chevron.style.transform = open ? 'rotate(180deg)' : '';
-    label.textContent = open ? 'Masquer le détail' : 'Voir le détail du calcul';
+  function toggleDetail(){
+    const p=document.getElementById('detail-panel');
+    const c=document.getElementById('detail-chevron');
+    const l=document.getElementById('detail-toggle-label');
+    const open=p.style.display==='none';
+    p.style.display=open?'':'none';
+    c.style.transform=open?'rotate(180deg)':'';
+    l.textContent=open?'Masquer le détail':'Voir le détail';
   }
 
-  // ---- Stepper +/- ----
-  let socVal = 20;
+  function setMode(el,idx){
+    document.querySelectorAll('.mode-tile').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active'); modeIdx=idx; update();
+  }
 
-  function socSet(v) {
-    socVal = Math.max(0, Math.min(79, v));
-    document.getElementById('soc-big').textContent = socVal;
+  let socVal=20;
+  function socSet(v){
+    socVal=Math.max(0,Math.min(79,v));
+    document.getElementById('soc-big').textContent=socVal;
     update();
   }
-
-  function makeHold(btnId, dir) {
-    const btn = document.getElementById(btnId);
-    let timer = null, interval = null;
-    const start = () => {
-      socSet(socVal + dir);
-      timer = setTimeout(() => {
-        interval = setInterval(() => socSet(socVal + dir * 10), 150);
-      }, 500);
+  function makeHold(btnId,dir){
+    const btn=document.getElementById(btnId);
+    let timer=null,interval=null;
+    const start=()=>{
+      socSet(socVal+dir);
+      timer=setTimeout(()=>{interval=setInterval(()=>socSet(socVal+dir*10),150);},500);
     };
-    const stop = () => { clearTimeout(timer); clearInterval(interval); };
-    btn.addEventListener('mousedown',   start);
-    btn.addEventListener('touchstart',  e => { e.preventDefault(); start(); }, { passive: false });
-    btn.addEventListener('mouseup',     stop);
-    btn.addEventListener('mouseleave',  stop);
-    btn.addEventListener('touchend',    stop);
-    btn.addEventListener('touchcancel', stop);
+    const stop=()=>{clearTimeout(timer);clearInterval(interval);};
+    btn.addEventListener('mousedown',start);
+    btn.addEventListener('touchstart',e=>{e.preventDefault();start();},{passive:false});
+    btn.addEventListener('mouseup',stop);
+    btn.addEventListener('mouseleave',stop);
+    btn.addEventListener('touchend',stop);
+    btn.addEventListener('touchcancel',stop);
   }
-  makeHold('soc-minus', -1);
-  makeHold('soc-plus',  +1);
+  makeHold('soc-plus',+1);
+  makeHold('soc-minus',-1);
 
-  function getSoc() { return socVal; }
+  function update(){
+    const M=MODES[modeIdx];
+    const soc=socVal;
+    const missing=Math.max(0,TARGET-soc);
+    const kwhNet=BATTERY*missing/100;
+    const kwhGrid=kwhNet/M.eff;
+    const hours=kwhGrid/M.power;
+    const totalMins=Math.round(hours*60);
 
-  function setMode(el, idx) {
-    document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    modeIdx = idx; update();
-  }
+    document.getElementById('m-kwh').innerHTML=kwhNet.toFixed(1).replace('.',',')+'&thinsp;<span class="mi-unit">kWh</span>';
+    document.getElementById('m-dur').textContent=missing===0?'0h00':fmtH(hours);
+    document.getElementById('d-soc').textContent=soc+' %';
+    document.getElementById('d-power').textContent=M.power.toFixed(1).replace('.',',')+' kW';
+    document.getElementById('d-eff').textContent=(M.eff*100).toFixed(1).replace('.',',')+' %';
+    document.getElementById('d-kwh').textContent=kwhGrid.toFixed(1).replace('.',',')+' kWh';
 
-  function update() {
-    const M = MODES[modeIdx];
-    const soc = getSoc();
-    const missing = Math.max(0, TARGET - soc);
-    const kwhNet  = BATTERY * missing / 100;
-    const kwhGrid = kwhNet / M.eff;
-    const hours   = kwhGrid / M.power;
-    const totalMins = Math.round(hours * 60);
+    const card=document.getElementById('result-card');
+    const eyebrow=document.getElementById('res-eyebrow');
+    const timeEl=document.getElementById('res-time');
+    const sub=document.getElementById('res-sub');
+    const dRes=document.getElementById('d-result');
 
-    document.getElementById('m-kwh').innerHTML = kwhNet.toFixed(1).replace('.',',') + ' <span class="m-unit-sm">kWh</span>';
-    document.getElementById('m-dur').textContent = missing===0 ? '0h00' : fmtH(hours);
-    document.getElementById('d-soc').textContent   = soc + ' %';
-    document.getElementById('d-power').textContent = M.power.toFixed(1).replace('.',',') + ' kW';
-    document.getElementById('d-eff').textContent   = (M.eff*100).toFixed(1).replace('.',',') + ' %';
-    document.getElementById('d-kwh').textContent   = kwhGrid.toFixed(1).replace('.',',') + ' kWh';
-
-    const card    = document.getElementById('result-card');
-    const eyebrow = document.getElementById('res-eyebrow');
-    const timeEl  = document.getElementById('res-time');
-    const sub     = document.getElementById('res-sub');
-    const dRes    = document.getElementById('d-result');
-
-    if (missing === 0) {
-      card.className = 'result-card state-ok';
-      eyebrow.textContent = 'Batterie suffisante';
-      timeEl.textContent  = '≥ 80 %';
-      sub.textContent     = 'Aucune recharge nécessaire';
-      dRes.textContent    = '—'; return;
+    if(missing===0){
+      card.className='result-card state-ok';
+      eyebrow.textContent='Batterie suffisante';
+      timeEl.textContent='≥ 80 %';
+      sub.textContent='Aucune recharge nécessaire';
+      dRes.textContent='—'; return;
     }
 
-    const val = document.getElementById('end-time').value;
-    if (!val) { card.className='result-card state-info'; eyebrow.textContent='En attente'; timeEl.textContent='--:--'; sub.textContent="Entrez l'heure de fin souhaitée"; dRes.textContent='--:--'; return; }
-    const [h,mn] = val.split(':').map(Number);
-    const em = h*60+mn;
-    let sm = em - totalMins;
-    const prev = sm < 0;
-    sm = ((sm % (24*60)) + (24*60)) % (24*60);
-    const startStr = pad(Math.floor(sm/60)) + ':' + pad(sm%60);
-    card.className = 'result-card ' + (prev ? 'state-warn' : 'state-ok');
-    eyebrow.textContent = 'Branchez la voiture à';
-    timeEl.textContent  = startStr;
-    sub.textContent     = prev ? 'La veille · durée ' + fmtH(hours) : 'Durée · ' + fmtH(hours);
-    dRes.textContent    = startStr + (prev ? ' -1j' : '');
+    const val=document.getElementById('end-time').value;
+    if(!val){
+      card.className='result-card state-info';
+      eyebrow.textContent='En attente';
+      timeEl.textContent='--:--';
+      sub.textContent='Entrez une heure';
+      dRes.textContent='--:--'; return;
+    }
+
+    const[h,mn]=val.split(':').map(Number);
+    const em=h*60+mn;
+    let sm=em-totalMins;
+    const prev=sm<0;
+    sm=((sm%(24*60))+(24*60))%(24*60);
+    const startStr=pad(Math.floor(sm/60))+':'+pad(sm%60);
+    card.className='result-card '+(prev?'state-warn':'state-ok');
+    eyebrow.textContent='Branchez la voiture à';
+    timeEl.textContent=startStr;
+    sub.textContent=prev?'La veille · '+fmtH(hours):'Durée · '+fmtH(hours);
+    dRes.textContent=startStr+(prev?' -1j':'');
   }
 
-  // Init
-  const now = new Date();
-  const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
-  document.getElementById('end-time').value = t;
+  const now=new Date();
+  document.getElementById('end-time').value=pad(now.getHours())+':'+pad(now.getMinutes());
   update();
 
-  // ---- PWA Install prompt ----
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('install-banner').style.display = 'flex';
-  });
-  document.getElementById('install-btn').addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    document.getElementById('install-banner').style.display = 'none';
-  });
-  window.addEventListener('appinstalled', () => {
-    document.getElementById('install-banner').style.display = 'none';
-  });
-
-  // ---- Service Worker ----
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  let deferredPrompt=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').style.display='flex';});
+  document.getElementById('install-btn').addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('install-banner').style.display='none';});
+  window.addEventListener('appinstalled',()=>{document.getElementById('install-banner').style.display='none';});
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
 </body>
 </html>
