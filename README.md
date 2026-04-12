@@ -2,6 +2,9 @@
 
 Calculateur de recharge pour **Renault Zoé (batterie 52 kWh)**, conçu comme une Progressive Web App (PWA) installable sur Android.
 
+- **Dépôt GitHub :** https://github.com/Manu0042/zoe-charge-calculator
+- **Application (installation Android) :** https://manu0042.github.io/zoe-charge-calculator
+
 ---
 
 ## Fonctionnalités
