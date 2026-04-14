@@ -1,4 +1,4 @@
-const CACHE = 'zoe-charge-v13';
+const CACHE = 'zoe-charge-v14';
 const ASSETS = [
   './index.html',
   './manifest.json',
