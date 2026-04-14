@@ -37,7 +37,7 @@
       position: relative; z-index: 1;
       width: 100%; max-width: 420px; margin: 0 auto;
       height: 100dvh;
-      padding: env(safe-area-inset-top,10px) 14px env(safe-area-inset-bottom,10px);
+      padding: env(safe-area-inset-top,20px) 14px env(safe-area-inset-bottom,10px);
       display: flex; flex-direction: column; gap: 9px;
     }
 
@@ -210,9 +210,6 @@
         <div class="res-eyebrow" id="res-eyebrow">En attente</div>
         <div class="res-time" id="res-time">--:--</div>
       </div>
-      <div style="text-align:right;">
-        <div class="res-sub" id="res-sub">Entrez une heure</div>
-      </div>
     </div>
   </div>
 
@@ -287,9 +284,6 @@
     const val=document.getElementById('end-time').value;
     if(!val){
       card.className='result-card state-info';
-      eyebrow.textContent='En attente';
-      timeEl.textContent='--:--';
-      sub.textContent='Entrez une heure';
       return;
     }
 
@@ -302,7 +296,6 @@
     card.className='result-card '+(prev?'state-warn':'state-ok');
     eyebrow.textContent='Branchez la voiture à';
     timeEl.textContent=startStr;
-    sub.textContent=prev?'La veille · '+fmtH(hours):'Durée · '+fmtH(hours);
   }
 
   const now=new Date();
